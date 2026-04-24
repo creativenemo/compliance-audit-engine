@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
-from app.api.routes import audit, health, share
+from app.api.routes import admin, audit, health, share
 
 app = FastAPI(
     title="Compliance Audit Engine",
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(audit.router, prefix="/api/v1")
 app.include_router(share.router, prefix="/api/v1")
+app.include_router(admin.router, prefix="/api/v1")
 
 # Lambda handler
 handler = Mangum(app, lifespan="off")

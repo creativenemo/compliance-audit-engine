@@ -31,7 +31,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*", "orchestrator*", "scrapers*", "index_refresher*"]
+include = ["app*", "orchestrator*", "scrapers*", "index_refresher*", "pdf_generator*"]
 
 [tool.ruff]
 line-length = 100

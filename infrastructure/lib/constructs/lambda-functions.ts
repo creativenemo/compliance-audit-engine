@@ -21,6 +21,7 @@ export class LambdaFunctionsConstruct extends Construct {
   public readonly apiHandler: lambda.Function;
   public readonly orchestrator: lambda.Function;
   public readonly indexRefresher: lambda.Function;
+  public readonly pdfGenerator: lambda.Function;
 
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id);
@@ -82,6 +83,22 @@ export class LambdaFunctionsConstruct extends Construct {
       environment: commonEnv,
     });
 
+    // PDF Generator — Playwright renders report page → S3 PDF
+    this.pdfGenerator = new lambda.Function(this, "PdfGenerator", {
+      functionName: "compliance-pdf-generator",
+      runtime: lambda.Runtime.PYTHON_3_12,
+      code: lambda.Code.fromAsset("../backend", {
+        exclude: ["tests/", ".venv/", "__pycache__/", "*.pyc"],
+      }),
+      handler: "pdf_generator.handler.handler",
+      memorySize: 1024,
+      timeout: cdk.Duration.minutes(2),
+      environment: {
+        ...commonEnv,
+        FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL ?? "http://localhost:3000",
+      },
+    });
+
     // Grants — least privilege
     props.jobsTable.grantReadWriteData(this.apiHandler);
     props.apiKeysTable.grantReadData(this.apiHandler);
@@ -91,6 +108,7 @@ export class LambdaFunctionsConstruct extends Construct {
     props.indexesBucket.grantRead(this.orchestrator);
     props.reportsBucket.grantPut(this.orchestrator);
     props.indexesBucket.grantPut(this.indexRefresher);
+    props.pdfsBucket.grantPut(this.pdfGenerator);
 
     // Bedrock access for orchestrator (Nova calls)
     this.orchestrator.addToRolePolicy(
