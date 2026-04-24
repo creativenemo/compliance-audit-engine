@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
-class EntityType(str, Enum):
+class EntityType(StrEnum):
     LLC = "LLC"
     CORP = "Corp"
     LP = "LP"
@@ -14,13 +14,13 @@ class EntityType(str, Enum):
     OTHER = "Other"
 
 
-class CustomerType(str, Enum):
+class CustomerType(StrEnum):
     B2B = "B2B"
     B2C = "B2C"
     GOVERNMENT = "Government"
 
 
-class RevenueRange(str, Enum):
+class RevenueRange(StrEnum):
     UNDER_100K = "under_100k"
     R_100K_500K = "100k_500k"
     R_500K_1M = "500k_1m"
@@ -29,7 +29,7 @@ class RevenueRange(str, Enum):
     OVER_25M = "over_25m"
 
 
-class TransactionRange(str, Enum):
+class TransactionRange(StrEnum):
     UNDER_200 = "under_200"
     R_200_1K = "200_1k"
     R_1K_10K = "1k_10k"

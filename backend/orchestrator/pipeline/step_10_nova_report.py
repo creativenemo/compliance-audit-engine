@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from botocore.exceptions import BotoCoreError, ClientError
@@ -247,7 +247,7 @@ Rules:
 
 def _build_fallback_report(pipeline_data: dict[str, Any]) -> dict[str, Any]:
     """Minimal valid report structure used when Nova synthesis fails."""
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     return {
         "overall_risk_score": "HIGH",
         "score_breakdown": {
@@ -477,7 +477,7 @@ class NovaReportStep(BasePipelineStep):
 
         # Guarantee generated_at is present even if model omitted it
         if not report.get("generated_at"):
-            report["generated_at"] = datetime.now(timezone.utc).isoformat()
+            report["generated_at"] = datetime.now(UTC).isoformat()
 
         # If Step A scores are available and the full report omitted them (rare),
         # back-fill score_breakdown from the fast call

@@ -157,7 +157,7 @@ class DCscraper(BaseSosScraper):
     async def scrape_foreign_quals(self, legal_name: str) -> ForeignQualification:
         try:
             raw = await self._search_and_extract(legal_name, foreign=True)
-        except Exception as exc:
+        except Exception:
             return ForeignQualification(
                 state=self.state_code,
                 qualified=False,

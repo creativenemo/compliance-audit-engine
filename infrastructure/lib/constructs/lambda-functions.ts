@@ -9,6 +9,7 @@ import { Construct } from "constructs";
 
 interface Props {
   jobsTable: dynamodb.Table;
+  apiKeysTable: dynamodb.Table;
   auditQueue: sqs.Queue;
   indexesBucket: s3.Bucket;
   reportsBucket: s3.Bucket;
@@ -26,6 +27,7 @@ export class LambdaFunctionsConstruct extends Construct {
 
     const commonEnv = {
       JOBS_TABLE_NAME: props.jobsTable.tableName,
+      API_KEYS_TABLE_NAME: props.apiKeysTable.tableName,
       AUDIT_QUEUE_URL: props.auditQueue.queueUrl,
       INDEXES_BUCKET: props.indexesBucket.bucketName,
       REPORTS_BUCKET: props.reportsBucket.bucketName,
@@ -83,6 +85,7 @@ export class LambdaFunctionsConstruct extends Construct {
 
     // Grants — least privilege
     props.jobsTable.grantReadWriteData(this.apiHandler);
+    props.apiKeysTable.grantReadData(this.apiHandler);
     props.jobsTable.grantReadWriteData(this.orchestrator);
     props.auditQueue.grantSendMessages(this.apiHandler);
     props.pdfsBucket.grantRead(this.apiHandler);

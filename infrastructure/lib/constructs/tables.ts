@@ -4,6 +4,7 @@ import { Construct } from "constructs";
 
 export class TablesConstruct extends Construct {
   public readonly jobsTable: dynamodb.Table;
+  public readonly apiKeysTable: dynamodb.Table;
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
@@ -25,6 +26,17 @@ export class TablesConstruct extends Construct {
       sortKey: { name: "created_at", type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.INCLUDE,
       nonKeyAttributes: ["job_id", "updated_at", "current_step"],
+    });
+
+    // API keys table — pk="apikey#{sha256}", sk="#metadata"
+    this.apiKeysTable = new dynamodb.Table(this, "ApiKeysTable", {
+      tableName: "compliance-api-keys",
+      partitionKey: { name: "pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "sk", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+      timeToLiveAttribute: "ttl",
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
   }
 }

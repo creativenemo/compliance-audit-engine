@@ -12,12 +12,12 @@ os.environ.setdefault("AUDIT_QUEUE_URL", "")  # disable SQS in tests
 def client(monkeypatch):
     # Patch DynamoDB calls so tests don't need AWS
     import uuid
-    from unittest.mock import MagicMock, patch
+    from unittest.mock import patch
 
     mock_job_id = str(uuid.uuid4())
 
     with (
-        patch("app.services.dynamo.create_job", return_value=mock_job_id) as mock_create,
+        patch("app.services.dynamo.create_job", return_value=mock_job_id),
         patch("app.services.dynamo.get_job") as mock_get,
         patch("app.services.dynamo.get_report") as mock_report,
     ):

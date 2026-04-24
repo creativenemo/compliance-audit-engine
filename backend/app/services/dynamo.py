@@ -1,23 +1,22 @@
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
 import boto3
-from boto3.dynamodb.conditions import Key
 
 from app.config import settings
 from app.models.job import STEP_NAMES, JobStatus, StepStatus
 
 
 def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _ttl_24h() -> int:
     from datetime import timedelta
-    return int((datetime.now(timezone.utc) + timedelta(hours=24)).timestamp())
+    return int((datetime.now(UTC) + timedelta(hours=24)).timestamp())
 
 
 def get_table() -> Any:
@@ -100,7 +99,7 @@ def update_step_status(job_id: str, step_index: int, status: StepStatus, error: 
 def save_report(job_id: str, report_json: dict[str, Any]) -> None:
     table = get_table()
     from datetime import timedelta
-    ttl_1yr = int((datetime.now(timezone.utc) + timedelta(days=365)).timestamp())
+    ttl_1yr = int((datetime.now(UTC) + timedelta(days=365)).timestamp())
     table.put_item(Item={
         "job_id": job_id,
         "sk": "#report",

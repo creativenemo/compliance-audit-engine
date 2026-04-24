@@ -13,7 +13,6 @@ import csv
 import io
 import json
 import logging
-import re
 import urllib.request
 from typing import Any
 

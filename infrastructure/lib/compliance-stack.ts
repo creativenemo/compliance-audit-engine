@@ -18,6 +18,7 @@ export class ComplianceStack extends cdk.Stack {
 
     const functions = new LambdaFunctionsConstruct(this, "Functions", {
       jobsTable: tables.jobsTable,
+      apiKeysTable: tables.apiKeysTable,
       auditQueue: queues.auditQueue,
       indexesBucket: storage.indexesBucket,
       reportsBucket: storage.reportsBucket,

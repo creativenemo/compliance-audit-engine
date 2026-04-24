@@ -36,7 +36,7 @@ async def require_api_key(x_api_key: str = Header(..., alias="X-API-Key")) -> st
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or missing API key",
                 headers={"WWW-Authenticate": "ApiKey"},
-            )
+            ) from None
         raise
 
     return x_api_key

@@ -1,5 +1,5 @@
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import boto3
 
@@ -14,7 +14,7 @@ def _get_table():
 def create_share_token(job_id: str) -> tuple[str, datetime]:
     """Store a 7-day share token in DynamoDB. Returns (token, expiry_datetime)."""
     token = secrets.token_urlsafe(32)
-    expiry = datetime.now(timezone.utc) + timedelta(days=7)
+    expiry = datetime.now(UTC) + timedelta(days=7)
     ttl = int(expiry.timestamp())
 
     table = _get_table()
@@ -37,7 +37,7 @@ def validate_share_token(token: str) -> str | None:
         return None
 
     expires_at = datetime.fromisoformat(item["expires_at"])
-    if datetime.now(timezone.utc) > expires_at:
+    if datetime.now(UTC) > expires_at:
         return None
 
     return item["real_job_id"]

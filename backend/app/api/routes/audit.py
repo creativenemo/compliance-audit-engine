@@ -4,7 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import require_api_key
 from app.models.intake import IntakeForm
-from app.models.job import AuditSubmitResponse, JobStatus, JobStatusResponse, StepProgress, StepStatus
+from app.models.job import (
+    AuditSubmitResponse,
+    JobStatus,
+    JobStatusResponse,
+    StepProgress,
+    StepStatus,
+)
 from app.services import dynamo, s3, sqs
 from app.services.share import create_share_token
 

@@ -198,7 +198,7 @@ def _extract_submissions_data(
 
     # Find the most recent 10-K
     latest_10k_date: str | None = None
-    for form, date in zip(forms, dates):
+    for form, date in zip(forms, dates, strict=False):
         if form in ("10-K", "10-K/A"):
             latest_10k_date = date
             break  # list is newest-first
