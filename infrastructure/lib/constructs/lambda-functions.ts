@@ -8,13 +8,34 @@ import * as sqs from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 
 interface Props {
-  jobsTable: dynamodb.Table;
-  apiKeysTable: dynamodb.Table;
+  jobsTable: dynamodb.ITable;
+  apiKeysTable: dynamodb.ITable;
   auditQueue: sqs.Queue;
-  indexesBucket: s3.Bucket;
-  reportsBucket: s3.Bucket;
-  pdfsBucket: s3.Bucket;
+  indexesBucket: s3.IBucket;
+  reportsBucket: s3.IBucket;
+  pdfsBucket: s3.IBucket;
   devApiKey: string;
+}
+
+// Bundling command: pip install deps into /asset-output, then copy source.
+// --platform linux/x86_64 ensures compiled C extensions (pydantic_core etc.)
+// match the Lambda execution environment regardless of build host arch.
+const bundlingCmd = [
+  "bash", "-c",
+  [
+    "pip install -r requirements.txt -t /asset-output --quiet",
+    "cp -r app orchestrator scrapers index_refresher pdf_generator /asset-output/",
+  ].join(" && "),
+];
+
+function bundledCode(): lambda.AssetCode {
+  return lambda.Code.fromAsset("../backend", {
+    bundling: {
+      image: lambda.Runtime.PYTHON_3_12.bundlingImage,
+      command: bundlingCmd,
+      platform: "linux/amd64",
+    },
+  });
 }
 
 export class LambdaFunctionsConstruct extends Construct {
@@ -40,9 +61,7 @@ export class LambdaFunctionsConstruct extends Construct {
     this.apiHandler = new lambda.Function(this, "ApiHandler", {
       functionName: "compliance-api-handler",
       runtime: lambda.Runtime.PYTHON_3_12,
-      code: lambda.Code.fromAsset("../backend", {
-        exclude: ["tests/", ".venv/", "__pycache__/", "*.pyc"],
-      }),
+      code: bundledCode(),
       handler: "app.main.handler",
       memorySize: 256,
       timeout: cdk.Duration.seconds(30),
@@ -53,9 +72,7 @@ export class LambdaFunctionsConstruct extends Construct {
     this.orchestrator = new lambda.Function(this, "Orchestrator", {
       functionName: "compliance-orchestrator",
       runtime: lambda.Runtime.PYTHON_3_12,
-      code: lambda.Code.fromAsset("../backend", {
-        exclude: ["tests/", ".venv/", "__pycache__/", "*.pyc"],
-      }),
+      code: bundledCode(),
       handler: "orchestrator.handler.handler",
       memorySize: 1024,
       timeout: cdk.Duration.minutes(5),
@@ -74,9 +91,7 @@ export class LambdaFunctionsConstruct extends Construct {
     this.indexRefresher = new lambda.Function(this, "IndexRefresher", {
       functionName: "compliance-index-refresher",
       runtime: lambda.Runtime.PYTHON_3_12,
-      code: lambda.Code.fromAsset("../backend", {
-        exclude: ["tests/", ".venv/", "__pycache__/", "*.pyc"],
-      }),
+      code: bundledCode(),
       handler: "index_refresher.handler.handler",
       memorySize: 512,
       timeout: cdk.Duration.minutes(10),
@@ -87,9 +102,7 @@ export class LambdaFunctionsConstruct extends Construct {
     this.pdfGenerator = new lambda.Function(this, "PdfGenerator", {
       functionName: "compliance-pdf-generator",
       runtime: lambda.Runtime.PYTHON_3_12,
-      code: lambda.Code.fromAsset("../backend", {
-        exclude: ["tests/", ".venv/", "__pycache__/", "*.pyc"],
-      }),
+      code: bundledCode(),
       handler: "pdf_generator.handler.handler",
       memorySize: 1024,
       timeout: cdk.Duration.minutes(2),

@@ -3,43 +3,27 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 
 export class StorageConstruct extends Construct {
-  public readonly indexesBucket: s3.Bucket;
-  public readonly reportsBucket: s3.Bucket;
-  public readonly pdfsBucket: s3.Bucket;
+  public readonly indexesBucket: s3.IBucket;
+  public readonly reportsBucket: s3.IBucket;
+  public readonly pdfsBucket: s3.IBucket;
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
-    this.indexesBucket = new s3.Bucket(this, "IndexesBucket", {
-      bucketName: `compliance-indexes-${cdk.Aws.ACCOUNT_ID}`,
-      versioned: false,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      lifecycleRules: [],
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-    });
+    // Import existing buckets (created during initial deploy attempt)
+    this.indexesBucket = s3.Bucket.fromBucketName(
+      this, "IndexesBucket",
+      `compliance-indexes-${cdk.Aws.ACCOUNT_ID}`,
+    );
 
-    this.reportsBucket = new s3.Bucket(this, "ReportsBucket", {
-      bucketName: `compliance-reports-${cdk.Aws.ACCOUNT_ID}`,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      lifecycleRules: [
-        {
-          expiration: cdk.Duration.days(90),
-          id: "delete-raw-snapshots-90d",
-        },
-      ],
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-    });
+    this.reportsBucket = s3.Bucket.fromBucketName(
+      this, "ReportsBucket",
+      `compliance-reports-${cdk.Aws.ACCOUNT_ID}`,
+    );
 
-    this.pdfsBucket = new s3.Bucket(this, "PdfsBucket", {
-      bucketName: `compliance-pdfs-${cdk.Aws.ACCOUNT_ID}`,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      lifecycleRules: [
-        {
-          expiration: cdk.Duration.days(365),
-          id: "delete-pdfs-1yr",
-        },
-      ],
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-    });
+    this.pdfsBucket = s3.Bucket.fromBucketName(
+      this, "PdfsBucket",
+      `compliance-pdfs-${cdk.Aws.ACCOUNT_ID}`,
+    );
   }
 }

@@ -80,18 +80,25 @@ def update_job_status(job_id: str, status: JobStatus, current_step: int = 0) -> 
 def update_step_status(job_id: str, step_index: int, status: StepStatus, error: str | None = None) -> None:
     table = get_table()
     now = _now_iso()
-    update_expr = (
-        f"SET steps[{step_index}].#s = :s, steps[{step_index}].completed_at = :ca, updated_at = :u"
-    )
+    if status == StepStatus.RUNNING:
+        update_expr = (
+            f"SET steps[{step_index}].#s = :s, steps[{step_index}].started_at = :ca, updated_at = :u"
+        )
+    else:
+        update_expr = (
+            f"SET steps[{step_index}].#s = :s, steps[{step_index}].completed_at = :ca, updated_at = :u"
+        )
     expr_values: dict[str, Any] = {":s": status.value, ":ca": now, ":u": now}
+    expr_names: dict[str, str] = {"#s": "status"}
     if error:
         update_expr += f", steps[{step_index}].#e = :e"
         expr_values[":e"] = error
+        expr_names["#e"] = "error"
 
     table.update_item(
         Key={"job_id": job_id, "sk": "#metadata"},
         UpdateExpression=update_expr,
-        ExpressionAttributeNames={"#s": "status", "#e": "error"},
+        ExpressionAttributeNames=expr_names,
         ExpressionAttributeValues=expr_values,
     )
 

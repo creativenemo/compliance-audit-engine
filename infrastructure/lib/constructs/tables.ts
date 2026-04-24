@@ -4,7 +4,7 @@ import { Construct } from "constructs";
 
 export class TablesConstruct extends Construct {
   public readonly jobsTable: dynamodb.Table;
-  public readonly apiKeysTable: dynamodb.Table;
+  public readonly apiKeysTable: dynamodb.ITable;
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
@@ -14,7 +14,7 @@ export class TablesConstruct extends Construct {
       partitionKey: { name: "job_id", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "sk", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+      encryption: dynamodb.TableEncryption.DEFAULT,
       timeToLiveAttribute: "ttl",
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
@@ -28,15 +28,10 @@ export class TablesConstruct extends Construct {
       nonKeyAttributes: ["job_id", "updated_at", "current_step"],
     });
 
-    // API keys table — pk="apikey#{sha256}", sk="#metadata"
-    this.apiKeysTable = new dynamodb.Table(this, "ApiKeysTable", {
-      tableName: "compliance-api-keys",
-      partitionKey: { name: "pk", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "sk", type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      encryption: dynamodb.TableEncryption.AWS_MANAGED,
-      timeToLiveAttribute: "ttl",
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-    });
+    // Import existing api-keys table (created during initial deploy attempt)
+    this.apiKeysTable = dynamodb.Table.fromTableName(
+      this, "ApiKeysTable",
+      "compliance-api-keys",
+    );
   }
 }
