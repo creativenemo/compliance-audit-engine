@@ -33,7 +33,6 @@ export class LambdaFunctionsConstruct extends Construct {
       REPORTS_BUCKET: props.reportsBucket.bucketName,
       PDFS_BUCKET: props.pdfsBucket.bucketName,
       DEV_API_KEY: props.devApiKey,
-      AWS_REGION: cdk.Aws.REGION,
     };
 
     // API Handler — FastAPI via Mangum
