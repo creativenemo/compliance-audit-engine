@@ -14,6 +14,9 @@ class Settings(BaseSettings):
 
     # Auth — Sprint 1 dev key; replace with DynamoDB lookup in Sprint 5
     dev_api_key: str = "dev-key-001"
+    from_email: str = "noreply@complianceaudit.ai"
+    admin_api_key: str = "admin-key-001"
+    api_keys_table_name: str = "compliance-api-keys"
 
     # Bedrock
     bedrock_region: str = "us-east-1"

@@ -50,6 +50,62 @@ export interface AuditSubmitResponse {
   message: string;
 }
 
+// ─── Report types ────────────────────────────────────────────────────────────
+
+export type RiskLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type SectionStatus = "PASS" | "FAIL" | "WARNING" | "NOT_CHECKED";
+export type SourceStatus = "checked" | "failed" | "skipped";
+export type ActionUrgency = "critical" | "high" | "medium" | "low";
+
+export interface ReportFinding {
+  finding: string;
+  source_field: string;
+  source_name: string;
+}
+
+export interface ReportSection {
+  section_id: string;
+  title: string;
+  status: SectionStatus;
+  findings: ReportFinding[];
+  recommendations: string[];
+  sources: string[];
+}
+
+export interface ActionItem {
+  priority: number; // 1–5
+  action: string;
+  urgency: ActionUrgency;
+  estimated_cost: string | null;
+}
+
+export interface ReportSource {
+  name: string;
+  status: SourceStatus;
+  checked_at: string | null;
+}
+
+export interface ScoreBreakdown {
+  entity_status: number;
+  federal_compliance: number;
+  sanctions_watchlists: number;
+  tax_exposure: number;
+  license_status: number;
+}
+
+export interface ReportSchema {
+  overall_risk_score: RiskLevel;
+  score_breakdown: ScoreBreakdown;
+  executive_summary: string;
+  sections: ReportSection[];
+  top_action_items: ActionItem[];
+  data_sources_checked: ReportSource[];
+  generated_at: string;
+  disclaimer: string;
+}
+
+// ─── US States ───────────────────────────────────────────────────────────────
+
 export const US_STATES: { code: string; name: string }[] = [
   { code: "AL", name: "Alabama" }, { code: "AK", name: "Alaska" },
   { code: "AZ", name: "Arizona" }, { code: "AR", name: "Arkansas" },

@@ -1,4 +1,4 @@
-import type { AuditStatusResponse, AuditSubmitResponse, IntakeForm } from "./types";
+import type { AuditStatusResponse, AuditSubmitResponse, IntakeForm, ReportSchema } from "./types";
 
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? "dev-key-001";
 const BASE = "";  // rewrites proxy /api/* to backend
@@ -32,6 +32,19 @@ export async function getAuditStatus(jobId: string): Promise<AuditStatusResponse
   return request<AuditStatusResponse>(`${BASE}/api/v1/audit/${jobId}/status`);
 }
 
-export async function getAuditReport(jobId: string): Promise<unknown> {
-  return request<unknown>(`${BASE}/api/v1/audit/${jobId}/report`);
+export async function getAuditReport(jobId: string): Promise<ReportSchema> {
+  return request<ReportSchema>(`${BASE}/api/v1/audit/${jobId}/report`);
+}
+
+export async function getReportPdf(jobId: string): Promise<Blob> {
+  const API_KEY_VAL = process.env.NEXT_PUBLIC_API_KEY ?? "dev-key-001";
+  const res = await fetch(`${BASE}/api/v1/audit/${jobId}/pdf`, {
+    headers: { "X-API-Key": API_KEY_VAL },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.blob();
+}
+
+export async function getShareUrl(jobId: string): Promise<{ share_url: string }> {
+  return request<{ share_url: string }>(`${BASE}/api/v1/audit/${jobId}/share`);
 }

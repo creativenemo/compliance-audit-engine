@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAuditReport, getAuditStatus } from "./api-client";
+import type { ReportSchema } from "./types";
 
 export function useAuditStatus(jobId: string, enabled = true) {
   return useQuery({
@@ -15,7 +16,7 @@ export function useAuditStatus(jobId: string, enabled = true) {
 }
 
 export function useAuditReport(jobId: string, enabled = true) {
-  return useQuery({
+  return useQuery<ReportSchema>({
     queryKey: ["audit-report", jobId],
     queryFn: () => getAuditReport(jobId),
     enabled: enabled && !!jobId,

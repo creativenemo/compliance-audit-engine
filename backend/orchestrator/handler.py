@@ -57,6 +57,34 @@ async def _run_pipeline(job_id: str, intake: dict[str, Any]) -> None:
     dynamo.save_report(job_id, report_result.data)
     logger.info("Pipeline complete for job %s", job_id)
 
+    # Email notification
+    try:
+        from app.services.email import send_report_ready_email
+        intake_item = dynamo.get_job(job_id)
+        if intake_item:
+            intake_data = json.loads(intake_item.get("intake_data", "{}"))
+            score_data = report_result.data.get("score_breakdown", {})
+            overall = report_result.data.get("overall_risk_score", "MEDIUM")
+            weights = {
+                "entity_status": 0.25,
+                "federal_compliance": 0.25,
+                "sanctions_watchlists": 0.20,
+                "tax_exposure": 0.20,
+                "license_status": 0.10,
+            }
+            numeric_score = int(sum(score_data.get(k, 75) * w for k, w in weights.items()))
+            send_report_ready_email(
+                to_email=intake_data.get("business_email", ""),
+                first_name=intake_data.get("first_name", ""),
+                legal_name=intake_data.get("legal_name", ""),
+                job_id=job_id,
+                overall_score=numeric_score,
+                risk_level=overall,
+                report_url=f"/audit/{job_id}/report",
+            )
+    except Exception as e:
+        logger.warning("Email notification failed for job %s: %s", job_id, e)
+
 
 async def _run_step(step: Any, intake: dict[str, Any], job_id: str) -> Any:
     idx = step.step_number - 1

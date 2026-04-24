@@ -1,5 +1,4 @@
-import secrets
-from datetime import datetime, timezone
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -7,6 +6,7 @@ from app.api.deps import require_api_key
 from app.models.intake import IntakeForm
 from app.models.job import AuditSubmitResponse, JobStatus, JobStatusResponse, StepProgress, StepStatus
 from app.services import dynamo, s3, sqs
+from app.services.share import create_share_token
 
 router = APIRouter(prefix="/audit")
 
@@ -92,16 +92,14 @@ async def get_audit_pdf(job_id: str, api_key: str = Depends(require_api_key)) ->
 
 @router.get("/{job_id}/share")
 async def get_share_link(job_id: str, api_key: str = Depends(require_api_key)) -> dict:
-    # Sprint 5: implement persistent share tokens in DynamoDB with 7-day TTL
     item = dynamo.get_job(job_id)
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
-
-    share_token = secrets.token_urlsafe(32)
+    token, expiry = create_share_token(job_id)
     return {
-        "share_url": f"/share/{share_token}",
+        "share_url": f"/share/{token}",
+        "expires_at": expiry.isoformat(),
         "expires_in_seconds": 7 * 24 * 3600,
-        "note": "Share links fully implemented in Sprint 5",
     }
 
 
